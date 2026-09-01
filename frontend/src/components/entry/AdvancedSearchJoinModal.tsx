@@ -19,6 +19,19 @@ interface Props {
   handleClose: () => void;
 }
 
+const normalizeAttrName = (name: string): string =>
+  name.normalize("NFKC").replace(/\s+/g, " ").trim();
+
+const uniqueAttrNames = (names: string[]): string[] =>
+  Array.from(
+    new Map(
+      names.map((name) => {
+        const normalizedName = normalizeAttrName(name);
+        return [normalizedName, normalizedName];
+      }),
+    ).values(),
+  );
+
 export const AdvancedSearchJoinModal: FC<Props> = ({
   targetEntityIds,
   searchAllEntities,
@@ -32,7 +45,9 @@ export const AdvancedSearchJoinModal: FC<Props> = ({
     joinAttrs.find((attr) => attr.name === targetAttrname);
 
   const [selectedAttrNames, setSelectedAttrNames] = useState<Array<string>>([
-    ...new Set(currentAttrInfo?.attrinfo.map((attr) => attr.name) ?? []),
+    ...uniqueAttrNames(
+      currentAttrInfo?.attrinfo.map((attr) => attr.name) ?? [],
+    ),
   ]);
 
   const { data: referralAttrs } = usePagodaSWR(
@@ -45,9 +60,9 @@ export const AdvancedSearchJoinModal: FC<Props> = ({
       ),
   );
 
-  const attrNameOptions = [
-    ...new Set(referralAttrs?.map((attr) => attr.name) ?? []),
-  ];
+  const attrNameOptions = uniqueAttrNames(
+    referralAttrs?.map((attr) => attr.name) ?? [],
+  );
 
   const handleUpdatePageURL = () => {
     // to prevent duplication of same name parameter
@@ -92,7 +107,7 @@ export const AdvancedSearchJoinModal: FC<Props> = ({
         options={attrNameOptions}
         value={selectedAttrNames}
         onChange={(_, value: Array<string>) => {
-          setSelectedAttrNames(value);
+          setSelectedAttrNames(uniqueAttrNames(value));
         }}
         renderInput={(params) => (
           <TextField {...params} variant="outlined" placeholder="属性を選択" />
