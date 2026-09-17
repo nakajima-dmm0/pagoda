@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Any, cast
 
 from django.db.models import OuterRef, Prefetch, Q, QuerySet, Subquery
 from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.helpers import forced_singular_serializer
 from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
 from rest_framework import generics, status, viewsets
 from rest_framework.exceptions import NotFound, PermissionDenied
@@ -793,12 +794,6 @@ class EntryExportAPI(generics.GenericAPIView):
         )
 
 
-@extend_schema(
-    parameters=[
-        OpenApiParameter("keyword", OpenApiTypes.STR, OpenApiParameter.QUERY),
-    ],
-    responses=OpenApiResponse(response=GetEntryAttrReferralListSerializer(many=False)),
-)
 class EntryAttrReferralsAPI(viewsets.ReadOnlyModelViewSet):
     serializer_class = GetEntryAttrReferralSerializer
 
@@ -900,6 +895,17 @@ class EntryAttrReferralsAPI(viewsets.ReadOnlyModelViewSet):
             ],
         )
 
+    @extend_schema(
+        methods=["GET"],
+        parameters=[
+            OpenApiParameter("keyword", OpenApiTypes.STR, OpenApiParameter.QUERY),
+        ],
+        responses={
+            200: OpenApiResponse(
+                response=forced_singular_serializer(GetEntryAttrReferralListSerializer),
+            ),
+        },
+    )
     def list(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         queryset = self.filter_queryset(self.get_queryset())
         serializer = self.get_serializer(queryset, many=True)
