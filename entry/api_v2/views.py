@@ -7,8 +7,8 @@ from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Any, cast
 
 from django.db.models import OuterRef, Prefetch, Q, QuerySet, Subquery
-from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.helpers import forced_singular_serializer
+from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
 from rest_framework import generics, status, viewsets
 from rest_framework.exceptions import NotFound, PermissionDenied
@@ -902,7 +902,9 @@ class EntryAttrReferralsAPI(viewsets.ReadOnlyModelViewSet):
         ],
         responses={
             200: OpenApiResponse(
-                response=forced_singular_serializer(GetEntryAttrReferralListSerializer),
+                response=forced_singular_serializer(  # type: ignore[no-untyped-call]
+                    GetEntryAttrReferralListSerializer
+                ),
             ),
         },
     )
